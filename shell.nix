@@ -3,6 +3,9 @@ let
     url = "https://github.com/NixOS/nixpkgs/archive/a84b0a7c509bdbaafbe6fe6e947bdaa98acafb99.tar.gz";
     sha256 = "0m8zrg4rp5mx5v9ar91ncnjhagmcrd3y9h56y48swan6a8gwpq52";
   }) {};
+  oldInetUtilsCommit = import (builtins.fetchTarball {
+    url = "https://github.com/NixOS/nixpkgs/commit/2a51117bdd6cd618703ea9cfc34cf3933ac4d4aa.tar.gz";
+  }) {};
   buildDeps = import ./default.nix;
 in
 pkgs.mkShell {
@@ -16,7 +19,7 @@ pkgs.mkShell {
     openssh
     netcat
     busybox
-    inetutils
+    oldInetUtilsCommit.inetutils
   ];
 
   shellHook = ''
