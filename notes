@@ -1,0 +1,34 @@
+use ICMP protocol
+
+IP fielsd adress of sender and of reciever 
+    aka my adress and the adress of the ohter guy i want response from
+
+
+ICMP fields
+    type 8 for echo when you are sending first 
+    type 0 when you are sentind back
+    checksum to validate the message
+        decifer this later 
+        The checksum is the 16-bit ones's complement of the one's
+        complement sum of the ICMP message starting with the ICMP Type.
+        For computing the checksum , the checksum field should be zero.
+        If the total length is odd, the received data is padded with one
+        octet of zeros for computing the checksum.  This checksum may be
+        replaced in the future.
+        i think just plus all the bits before
+
+    identifier if code == 0 so if i recieve the message you get number to match the pings
+
+    data recieved in echo will be the same in the response message
+
+
+
+
+requred options
+    -v verbose we need to print all the messagees we recieve not just echo
+    -? help
+    -ttl N(bonus) time to live with N defined in seconds how many times can it hop from a gateway to gateway {for testing pourposes to force an error}
+
+when it comes to FQDN use funcion getaddrinfo to know where to connect or bind
+
+      
