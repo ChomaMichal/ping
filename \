@@ -1,0 +1,33 @@
+#include "ping.h"
+#include <fcntl.h>
+
+int main(int argc, char **argv) {
+  t_args args;
+
+  memset(&args, 0, sizeof(args));
+
+  if (parsing(argc, argv, &args) == -1) {
+    printf("Usage ft_ping <fqdm/ip adres> <flags>");
+    return (1);
+  }
+
+  print_t_args(&args);
+
+  int sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock_fd == -1) {
+    perror("socket has failed");
+    return (1);
+  }
+  int flags = fcntl(sock_fd, F_GETFL, 0);
+  if (flags == -1) {
+    perror("getting socket flags has failed");
+    return (1);
+  }
+  if (fcntl(sock_fd, F_SETFL, flags | O_NONBLOCK)) {
+    perror("setting socket flags has failed");
+    return (1);
+  }
+
+  struct sock_addr s_addr;
+  if (connect(sock_fd, ))
+}

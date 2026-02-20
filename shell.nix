@@ -4,7 +4,8 @@ let
     sha256 = "0m8zrg4rp5mx5v9ar91ncnjhagmcrd3y9h56y48swan6a8gwpq52";
   }) {};
   oldInetUtilsCommit = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/commit/2a51117bdd6cd618703ea9cfc34cf3933ac4d4aa.tar.gz";
+    url = "https://github.com/NixOS/nixpkgs/archive/2a51117bdd6cd618703ea9cfc34cf3933ac4d4aa.tar.gz";
+    sha256 = "sha256-5XPVZuVTk5QAmYYuf4mUFkoO0S9ahsM0U4CEK9wSRyI=";
   }) {};
   buildDeps = import ./default.nix;
 in
@@ -23,10 +24,10 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    if [ "''${IN_NIX_SHELL:-}" != "pure" ]; then
-      echo "❗ Error: This script must be run inside a Nix shell with pure mode. Run 'nix-shell --pure' IN_NIX_SHELL==''${IN_NIX_SHELL:-})"
-      exit 1
-    fi
+    # if [ "''${IN_NIX_SHELL:-}" != "pure" ]; then
+    #   echo "❗ Error: This script must be run inside a Nix shell with pure mode. Run 'nix-shell --pure' IN_NIX_SHELL==''${IN_NIX_SHELL:-})"
+    #   exit 1
+    # fi
 
     set -o vi
     export PS1="\[\e[0;32m\]\W>\[\e[0m\] "
