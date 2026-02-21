@@ -2,7 +2,9 @@
 CC = clang
 
 SRC = main.c \
-	  parsing.c
+	  parsing.c \
+	  utils.c\
+	  sockets.c
 OBJ = $(SRC:.c=.o)
 
 NAME = ft_ping

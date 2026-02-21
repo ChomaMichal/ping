@@ -27,5 +27,7 @@ typedef struct p_args {
 int parsing(int argc, char **argv, t_args *args);
 void print_t_args(t_args *args);
 int send_echo_request(int sock_fd, struct timeval *time_stamp);
-int recieve_message(int sock_fd, struct timeval *current_time);
+int receive_message(int sock_fd, struct timeval *current_time);
+void print_received_message(char *buff);
+int set_up_socket(t_args *args);
 #endif
