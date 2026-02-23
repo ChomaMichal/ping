@@ -2,6 +2,7 @@
 #include <arpa/inet.h>
 #include <bits/types/struct_timeval.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/poll.h>
@@ -9,80 +10,61 @@
 #include <sys/time.h>
 #include <time.h>
 
-__pid_t mypid;
+sig_atomic_t g_sig;
 
-int send_echo_request(int sock_fd, struct timeval *time_stamp);
+void signal_handler(int sig) {
+  if (sig == SIGINT) {
+    g_sig = sig;
+  }
+}
+
+int set_up_signal(void) {
+  struct sigaction sig_struct = {0};
+  sig_struct.sa_handler = signal_handler;
+  sig_struct.sa_flags = 0;
+  if (sigaction(SIGALRM, &sig_struct, NULL) == -1) {
+    perror("Sig action failed");
+    return (-1);
+  }
+  if (sigaction(SIGINT, &sig_struct, NULL) == -1) {
+    perror("Sig action failed");
+    return (-1);
+  }
+  return (1);
+}
+
 int main(int argc, char **argv) {
-  mypid = getpid();
 
   t_args args;
-
-  memset(&args, 0, sizeof(args));
 
   if (parsing(argc, argv, &args) == -1) {
     printf("Usage ft_ping <fqdm/ip adres> <flags>");
     return (1);
   }
 
-  // print_t_args(&args);
-
+  if (set_up_signal() == -1) {
+    return (1);
+  }
   int sock_fd = set_up_socket(&args);
-
-  struct timeval last_message_time;
-  struct timeval current_time;
-
-  last_message_time.tv_sec = 0;
-  last_message_time.tv_usec = 0;
-  // perror("before send_echo_request");
-
-  gettimeofday(&current_time, NULL);
-  send_echo_request(sock_fd, &current_time);
-  // perror("after send_echo_request");
-  sleep(1);
-  receive_message(sock_fd, &current_time);
-}
-
-int receive_message(int sock_fd, struct timeval *current_time) {
-  struct msghdr msg;
-  int i = recvmsg(sock_fd, &msg, MSG_ERRQUEUE);
-  struct cmsghdr *cmsg;
-
-  for (cmsg = CMSG_FIRSTHDR(&msg); cmsg != NULL;
-       cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+  if (sock_fd == -1) {
+    return (1);
   }
-
-  return (1);
-}
-
-uint16_t checksum_cal(uint16_t *buff, size_t len) {
-  uint32_t rt;
-  while (len > 1) {
-    rt = (*buff);
-    buff++;
-    len -= 2;
+  while (1) {
+    alarm(1);
+    if (send_echo_request(sock_fd, &args) == -1) {
+      return (-1);
+    }
+    int rt = receive_message(sock_fd);
+    printf("%i rt of recieve message\n", rt);
+    if (rt == -1) {
+      return (-1);
+    }
+    if (rt == 0) {
+      if (g_sig == SIGINT) {
+        g_sig = 0;
+        break;
+      }
+    }
   }
-  if (len == 1) {
-    rt += *(uint8_t *)buff;
-  }
-  while (rt >> 16) {
-    rt = (rt & 0xFFFF) + (rt >> 16);
-  }
-  return (~(uint16_t)rt);
-}
-
-int send_echo_request(int sock_fd, struct timeval *time_stamp) {
-
-  static uint16_t sequence_number = 0;
-  char buff[100];
-  struct icmphdr *header = (void *)buff;
-
-  header->type = 8;     // type for echo
-  header->checksum = 0; // calcucalet checksum later
-  header->code = 0;     // should be 0
-  header->un.echo.sequence = sequence_number++;
-  header->un.echo.id = mypid;
-  memcpy(buff + sizeof(struct icmphdr), time_stamp, sizeof(struct timeval));
-  *((uint16_t *)buff + 2) = checksum_cal(
-      (uint16_t *)buff, sizeof(struct icmphdr) + sizeof(struct timeval));
-  return (write(sock_fd, buff, 8 + sizeof(struct timeval)));
+  printf("stats\n"); // todo
 }

@@ -50,7 +50,6 @@ int validate_ip(char *str) {
 }
 
 int ttl_flag(char *str, t_args *args) {
-  // printf(" In ttl str == %s\n", str);
   if (strncmp(str, "--ttl=", 6) != 0) {
     return (-1);
   }
@@ -63,12 +62,13 @@ int ttl_flag(char *str, t_args *args) {
   return (1);
 }
 
-// int validate_adress(char *str, t_args *args) {}
-
 int parsing(int argc, char **argv, t_args *args) {
+  memset(args, 0, sizeof(t_args));
+
   if (argc == 1) {
     return (1);
   }
+
   for (int i = 1; i < argc; i++) {
     // printf("%s argv[%i]\n", argv[i], i);
     if (simple_flags(argv[i], args) == 1) {
