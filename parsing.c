@@ -28,7 +28,6 @@ int validate_ip(char *str) {
         if (isdigit(str[i + num_len]) == 0)
           break;
       }
-      printf("%i == num_len\n", num_len);
       if (num_len > 3)
         return (-1);
       long check = atol(str + i);

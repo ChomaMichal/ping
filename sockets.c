@@ -10,9 +10,10 @@ int set_up_socket(t_args *args) {
   }
 
   int val = 1;
-  setsockopt(socket_fd, SOL_IP, IP_RECVERR, &val, sizeof(val));
   if (args->ttl_flag) {
     setsockopt(socket_fd, IPPROTO_IP, IP_TTL, &args->ttl_val,
                sizeof(args->ttl_val));
   }
+
+  return (socket_fd);
 }

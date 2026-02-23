@@ -17,6 +17,15 @@
 #include <unistd.h>
 
 extern sig_atomic_t g_sig;
+extern struct s_stats g_stats;
+
+struct s_stats {
+  float max;
+  float min;
+  float stddev;
+  size_t pck_send;
+  size_t pck_recieved;
+};
 
 typedef struct p_args {
   char *fqdm;
@@ -40,7 +49,7 @@ int send_echo_request(int sock_fd, t_args *args);
 // print anything if pid matches it prints relevant information return 0 if
 // nothing was recieved and signal interupted the reading, after this checg
 // g_sig, returns -1 on failiure of recv that wasn't caused by interupt
-int receive_message(int sock_fd);
+int receive_message(int sock_fd, t_args *args);
 void print_received_message(char *buff);
 int set_up_socket(t_args *args);
 #endif

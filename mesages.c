@@ -40,7 +40,6 @@ int send_echo_request(int sock_fd, t_args *args) {
   header->code = 0;         // should be 0
   header->un.echo.sequence = sequence_number++;
   header->un.echo.id = getpid(); // mypid;
-  printf("icmphdr->un.echo.id == %i\n", header->un.echo.id);
   gettimeofday((struct timeval *)(buff + sizeof(struct icmphdr)), NULL);
   header->checksum =
       checksum_cal(buff, sizeof(struct icmphdr) + sizeof(struct timeval));
@@ -48,11 +47,27 @@ int send_echo_request(int sock_fd, t_args *args) {
   int rt =
       sendto(sock_fd, buff, sizeof(struct icmphdr) + sizeof(struct timeval), 0,
              (struct sockaddr *)&sockaddr, sizeof(struct sockaddr_in));
-  printf("rt of sendto == %i\n", rt);
+  if (rt != -1) {
+    g_stats.pck_send++;
+  }
   return (rt);
 }
 
-int receive_message(int sock_fd) {
+void print_formated_report(void *ptr, ssize_t len, t_args *args) {
+  struct iphdr *iphdr = ptr;
+  struct icmphdr *icmphdr = (ptr + iphdr->ihl * 4);
+  struct timeval *send_time = ((void *)icmphdr) + sizeof(struct icmphdr);
+  struct timeval current_time;
+
+  gettimeofday(&current_time, NULL);
+
+  float timediff = (current_time.tv_sec - send_time->tv_sec) * 1000 +
+                   (float)(current_time.tv_usec - send_time->tv_usec) / 1000;
+  printf("%lu bytes from %s icmp_seq=%i ttl=%i time=%f ms\n", len, args->ip,
+         icmphdr->un.echo.sequence, iphdr->ttl, timediff);
+}
+
+int receive_message(int sock_fd, t_args *args) {
   char buff[IP_MAXPACKET] = {0};
   struct sockaddr_in sockaddr = {0};
   socklen_t sock_len = 0;
@@ -64,7 +79,6 @@ int receive_message(int sock_fd) {
     memset(buff, 0, IP_MAXPACKET);
     ssize_t i = recvfrom(sock_fd, buff, IP_MAXPACKET, 0,
                          (struct sockaddr *)&sockaddr, &sock_len);
-    printf("recvfrom rt == %i\n", i);
     if (i == -1) {
       if (errno == EINTR) {
         return (0);
@@ -73,26 +87,17 @@ int receive_message(int sock_fd) {
       return (-1);
     }
     iphdr = (void *)buff;
-    printf("iphdr->tot_len == %i\n", iphdr->tot_len);
-    icmphdr = (void *)(buff + iphdr->tot_len);
+    icmphdr = (void *)(buff + iphdr->ihl * 4);
     if (icmphdr->code == ICMP_ECHOREPLY) {
-      printf("icmphdr->un.echo.id == %i\n", icmphdr->un.echo.id);
       if (icmphdr->un.echo.id == getpid()) {
-        printf("Recieved message form: %x ttl: %i, sequence: %i\n",
-               iphdr->saddr, iphdr->ttl, icmphdr->un.echo.sequence);
-        // format the message
-        // and create buffering
-        // system for duplicate
-        // messagfes and
-        // calculation of
-        // sucksess rate
+        print_formated_report(buff, i, args);
+        g_stats.pck_recieved++;
         continue;
       } else {
         printf("not a correct client\n");
       }
     }
     if (g_sig == SIGINT || g_sig == SIGALRM) {
-      perror("in if sigin sigalarm");
       return (0);
     }
   }
