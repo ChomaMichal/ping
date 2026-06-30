@@ -28,7 +28,7 @@ int send_echo_request(int sock_fd, t_args *args) {
   if (sockaddr.sin_family == 0) {
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_port = 0;
-    inet_aton(args->ip, (struct in_addr *)&sockaddr.sin_addr.s_addr);
+    sockaddr.sin_addr.s_addr = args->ip_bits;
     memset(&sockaddr.sin_zero, 0, sizeof(sockaddr.sin_zero));
   }
 

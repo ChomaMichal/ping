@@ -30,6 +30,7 @@ struct s_stats {
 typedef struct p_args {
   char *fqdm;
   char *ip;
+  uint32_t ip_bits;
   size_t ttl_val;
   char ttl_flag;
   char v_flag;
